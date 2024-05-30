@@ -2,6 +2,7 @@ import java.util.Properties
 
 plugins {
     id("com.android.application")
+    id("com.google.gms.google-services")
     id("org.jetbrains.kotlin.android")
     //id("com.google.devtools.ksp") version "1.9.10-1.0.13"
     kotlin("kapt") // Needed for hilt currently.
@@ -97,6 +98,10 @@ dependencies {
 
     implementation("io.coil-kt:coil:2.6.0")
     implementation("io.coil-kt:coil-compose:2.6.0")
+
+    implementation(platform("com.google.firebase:firebase-bom:33.0.0"))
+    implementation ("com.google.firebase:firebase-messaging:24.0.0")
+    implementation("com.google.firebase:firebase-analytics")
 
     // Google Play Services for Location.
     implementation ("com.google.android.gms:play-services-location:21.2.0")
