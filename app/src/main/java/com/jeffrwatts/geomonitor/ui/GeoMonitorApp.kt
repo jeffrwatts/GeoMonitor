@@ -32,7 +32,7 @@ fun GeoMonitorApp() {
                 AppDrawer(
                     currentRoute = currentRoute,
                     navigateToQuakeEvents = navigationActions.navigateToQuakeEvents,
-                    navigateToQuakeMap = navigationActions.navigateToQuakeMap,
+                    navigateToQuakeMap = navigationActions.navigateToEarthQuakeMap,
                     closeDrawer = { coroutineScope.launch { drawerState.close() } }
                 )
             },

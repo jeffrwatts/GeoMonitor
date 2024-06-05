@@ -42,7 +42,7 @@ fun AppDrawer(
         NavigationDrawerItem(
             label = { Text(stringResource(id = R.string.quake_map)) },
             icon = { Icon(Icons.Filled.Map, null) },
-            selected = currentRoute == GeoMonitorDestinations.QUAKE_MAP_ROUTE,
+            selected = currentRoute == GeoMonitorDestinations.EARTH_QUAKE_MAP_ROUTE,
             onClick = { navigateToQuakeMap(); closeDrawer() },
             modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
         )

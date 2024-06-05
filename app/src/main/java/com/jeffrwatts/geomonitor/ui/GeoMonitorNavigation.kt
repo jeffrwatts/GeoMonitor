@@ -5,7 +5,7 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 
 object GeoMonitorDestinations {
     const val QUAKE_EVENTS_ROUTE = "quakeEvents"
-    const val QUAKE_MAP_ROUTE = "quakeMap"
+    const val EARTH_QUAKE_MAP_ROUTE = "earthQuakeMap"
 }
 
 class GeoMonitorNavigationActions(navController: NavController) {
@@ -24,8 +24,8 @@ class GeoMonitorNavigationActions(navController: NavController) {
             restoreState = true
         }
     }
-    val navigateToQuakeMap: () -> Unit = {
-        navController.navigate(GeoMonitorDestinations.QUAKE_MAP_ROUTE) {
+    val navigateToEarthQuakeMap: () -> Unit = {
+        navController.navigate(GeoMonitorDestinations.EARTH_QUAKE_MAP_ROUTE) {
             // Pop up to the start destination of the graph to
             // avoid building up a large stack of destinations
             // on the back stack as users select items
