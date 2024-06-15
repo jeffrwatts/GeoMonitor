@@ -8,16 +8,20 @@ object GeoMonitorDestinations {
 }
 
 class GeoMonitorNavigationActions(navController: NavController) {
-    val navigateToQuakeEvents: () -> Unit = {
-        navController.navigate(GeoMonitorDestinations.QUAKE_EVENTS_ROUTE) {
-            popUpTo(navController.graph.startDestinationId)
-            launchSingleTop = true
+    val navigateToQuakeEvents: (currentRoute: String?) -> Unit = { currentRoute->
+        if (currentRoute != GeoMonitorDestinations.QUAKE_EVENTS_ROUTE) {
+            navController.navigate(GeoMonitorDestinations.QUAKE_EVENTS_ROUTE) {
+                popUpTo(navController.graph.startDestinationId)
+                launchSingleTop = true
+            }
         }
     }
-    val navigateToEarthQuakeMap: () -> Unit = {
-        navController.navigate(GeoMonitorDestinations.EARTH_QUAKE_MAP_ROUTE) {
-            popUpTo(navController.graph.startDestinationId)
-            launchSingleTop = true
+    val navigateToEarthQuakeMap: (currentRoute: String?) -> Unit = { currentRoute->
+        if (currentRoute != GeoMonitorDestinations.EARTH_QUAKE_MAP_ROUTE) {
+            navController.navigate(GeoMonitorDestinations.EARTH_QUAKE_MAP_ROUTE) {
+                popUpTo(navController.graph.startDestinationId)
+                launchSingleTop = true
+            }
         }
     }
 }

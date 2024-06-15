@@ -36,21 +36,13 @@ fun GeoMonitorApp() {
                         label = { Text(stringResource(id = R.string.quake_events)) },
                         icon = { Icon(Icons.Filled.Radar, null) },
                         selected = currentRoute == GeoMonitorDestinations.QUAKE_EVENTS_ROUTE,
-                        onClick = {
-                            if (currentRoute != GeoMonitorDestinations.QUAKE_EVENTS_ROUTE) {
-                                navigationActions.navigateToQuakeEvents()
-                            }
-                        }
+                        onClick = { navigationActions.navigateToQuakeEvents(currentRoute) }
                     )
                     NavigationBarItem(
                         label = { Text(stringResource(id = R.string.quake_map)) },
                         icon = { Icon(Icons.Filled.Map, null) },
                         selected = currentRoute == GeoMonitorDestinations.EARTH_QUAKE_MAP_ROUTE,
-                        onClick = {
-                            if (currentRoute != GeoMonitorDestinations.EARTH_QUAKE_MAP_ROUTE) {
-                                navigationActions.navigateToEarthQuakeMap()
-                            }
-                        }
+                        onClick = { navigationActions.navigateToEarthQuakeMap(currentRoute) }
                     )
                 }
             }
