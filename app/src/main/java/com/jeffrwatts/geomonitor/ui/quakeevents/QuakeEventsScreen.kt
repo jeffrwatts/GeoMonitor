@@ -13,14 +13,12 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.jeffrwatts.geomonitor.R
 import com.jeffrwatts.geomonitor.ui.GeoMonitorTopAppBar
 
@@ -33,12 +31,6 @@ fun QuakeEventsScreen(
 ) {
     val topAppBarState = rememberTopAppBarState()
 
-    val permissionsState = rememberMultiplePermissionsState(
-        permissions = listOf(
-            android.Manifest.permission.POST_NOTIFICATIONS,
-        )
-    )
-
     Scaffold(
         topBar = {
             GeoMonitorTopAppBar(
@@ -49,13 +41,6 @@ fun QuakeEventsScreen(
         },
         modifier = modifier
     ) { innerPadding ->
-
-        LaunchedEffect(key1 = permissionsState) {
-            if (!permissionsState.allPermissionsGranted) {
-                permissionsState.launchMultiplePermissionRequest()
-            }
-        }
-
         Column(modifier = Modifier
             .padding(innerPadding)
             .fillMaxSize()) {
