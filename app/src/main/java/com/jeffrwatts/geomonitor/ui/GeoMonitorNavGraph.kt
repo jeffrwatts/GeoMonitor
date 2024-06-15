@@ -13,7 +13,6 @@ import com.jeffrwatts.geomonitor.ui.quakeevents.QuakeEventsScreen
 fun GeoMonitorNavGraph(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
-    openDrawer: () -> Unit = {},
     startDestination: String = GeoMonitorDestinations.QUAKE_EVENTS_ROUTE,
 ) {
     NavHost(
@@ -23,11 +22,11 @@ fun GeoMonitorNavGraph(
     ) {
         composable(route = GeoMonitorDestinations.QUAKE_EVENTS_ROUTE) {
             //val actions = remember(navController) { GeoMonitorNavigationActions(navController) }
-            QuakeEventsScreen(openDrawer = openDrawer, modifier)
+            QuakeEventsScreen()
         }
         composable(route = GeoMonitorDestinations.EARTH_QUAKE_MAP_ROUTE) {
             //val actions = remember(navController) { GeoMonitorNavigationActions(navController) }
-            EarthQuakeMapScreen(openDrawer = openDrawer, modifier)
+            EarthQuakeMapScreen()
         }
     }
 }

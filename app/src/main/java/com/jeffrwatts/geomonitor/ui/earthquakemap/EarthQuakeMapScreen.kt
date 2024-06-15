@@ -34,7 +34,6 @@ import com.jeffrwatts.geomonitor.ui.GeoMonitorTopAppBar
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 fun EarthQuakeMapScreen(
-    openDrawer: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: EarthQuakeMapViewModel = hiltViewModel()
 ) {
@@ -66,7 +65,6 @@ fun EarthQuakeMapScreen(
         topBar = {
             GeoMonitorTopAppBar(
                 title = stringResource(R.string.quake_map),
-                openDrawer = openDrawer,
                 topAppBarState = topAppBarState
             )
         },

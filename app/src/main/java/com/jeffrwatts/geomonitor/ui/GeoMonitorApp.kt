@@ -1,16 +1,23 @@
 package com.jeffrwatts.geomonitor.ui
 
-import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.rememberDrawerState
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.Radar
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.jeffrwatts.geomonitor.R
 import com.jeffrwatts.geomonitor.ui.theme.GeoMonitorTheme
-import kotlinx.coroutines.launch
 
 @Composable
 fun GeoMonitorApp() {
@@ -20,28 +27,35 @@ fun GeoMonitorApp() {
             GeoMonitorNavigationActions(navController)
         }
 
-        val coroutineScope = rememberCoroutineScope()
-
-        val navBackStackEntry by navController.currentBackStackEntryAsState()
-        val currentRoute = navBackStackEntry?.destination?.route ?: GeoMonitorDestinations.QUAKE_EVENTS_ROUTE
-
-        val drawerState = rememberDrawerState(DrawerValue.Closed)
-
-        ModalNavigationDrawer(
-            drawerContent = {
-                AppDrawer(
-                    currentRoute = currentRoute,
-                    navigateToQuakeEvents = navigationActions.navigateToQuakeEvents,
-                    navigateToQuakeMap = navigationActions.navigateToEarthQuakeMap,
-                    closeDrawer = { coroutineScope.launch { drawerState.close() } }
-                )
-            },
-            drawerState = drawerState
-        ) {
-            GeoMonitorNavGraph(
-                navController = navController,
-                openDrawer = { coroutineScope.launch { drawerState.open() } },
-            )
+        Scaffold(
+            bottomBar = {
+                NavigationBar {
+                    val navBackStackEntry by navController.currentBackStackEntryAsState()
+                    val currentRoute = navBackStackEntry?.destination?.route
+                    NavigationBarItem(
+                        label = { Text(stringResource(id = R.string.quake_events)) },
+                        icon = { Icon(Icons.Filled.Radar, null) },
+                        selected = currentRoute == GeoMonitorDestinations.QUAKE_EVENTS_ROUTE,
+                        onClick = {
+                            if (currentRoute != GeoMonitorDestinations.QUAKE_EVENTS_ROUTE) {
+                                navigationActions.navigateToQuakeEvents()
+                            }
+                        }
+                    )
+                    NavigationBarItem(
+                        label = { Text(stringResource(id = R.string.quake_map)) },
+                        icon = { Icon(Icons.Filled.Map, null) },
+                        selected = currentRoute == GeoMonitorDestinations.EARTH_QUAKE_MAP_ROUTE,
+                        onClick = {
+                            if (currentRoute != GeoMonitorDestinations.EARTH_QUAKE_MAP_ROUTE) {
+                                navigationActions.navigateToEarthQuakeMap()
+                            }
+                        }
+                    )
+                }
+            }
+        ) { innerPadding ->
+            GeoMonitorNavGraph(navController = navController, modifier = Modifier.padding(innerPadding))
         }
     }
 }
