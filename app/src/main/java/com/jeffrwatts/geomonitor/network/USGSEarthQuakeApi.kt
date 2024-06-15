@@ -14,4 +14,16 @@ interface USGSEarthquakeApi {
         @Query("longitude") longitude: Double,
         @Query("maxradiuskm") maxRadiusKm: Int
     ): USGSEarthquakeResponse
+
+    @GET("query")
+    suspend fun getEarthquakesByBounds(
+        @Query("format") format: String = "geojson",
+        @Query("starttime") startTime: String,
+        @Query("endtime") endTime: String,
+        @Query("minmagnitude") minMagnitude: Double,
+        @Query("minlatitude") minLatitude: Double,
+        @Query("maxlatitude") maxLatitude: Double,
+        @Query("minlongitude") minLongitude: Double,
+        @Query("maxlongitude") maxLongitude: Double
+    ): USGSEarthquakeResponse
 }

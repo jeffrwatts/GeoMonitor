@@ -1,5 +1,6 @@
 package com.jeffrwatts.geomonitor.data.earthquakeevent
 
+import com.google.android.gms.maps.model.LatLngBounds
 import com.jeffrwatts.geomonitor.network.USGSEarthquakeApi
 import com.jeffrwatts.geomonitor.network.toEarthquakeEvent
 import javax.inject.Inject
@@ -12,6 +13,11 @@ class EarthquakeRepository @Inject constructor(
     private val dao: EarthquakeEventDao,
     private val usgsApi: USGSEarthquakeApi
 ) {
+    fun getEarthQuakeEvents(bounds: LatLngBounds) : Flow<List<EarthQuakeEvent>> = flow<List<EarthQuakeEvent>> {
+        fetchEarthquakes(bounds)
+        emit(dao.getAllEvents())
+    }.flowOn(Dispatchers.IO)
+
     // Get earthquake events with the option to force refresh from the API
     fun getEarthquakeEvents(forceRefresh: Boolean): Flow<List<EarthQuakeEvent>> = flow {
         if (forceRefresh) {
@@ -38,6 +44,32 @@ class EarthquakeRepository @Inject constructor(
                 latitude = 19.5429,
                 longitude = -155.6659,
                 maxRadiusKm = 100
+            )
+            val events = earthquakeResponse.features.map { it.toEarthquakeEvent() }
+            dao.insertAll(events)
+            return true // Return true when data is successfully fetched and stored
+        } catch (e: Exception) {
+            e.printStackTrace() // Log the error
+            return false // Return false in case of an exception
+        }
+    }
+
+    private suspend fun fetchEarthquakes(bounds: LatLngBounds): Boolean {
+        val minLatitude = bounds.southwest.latitude
+        val maxLatitude = bounds.northeast.latitude
+        val minLongitude = bounds.southwest.longitude
+        val maxLongitude = bounds.northeast.longitude
+
+        try {
+            val earthquakeResponse = usgsApi.getEarthquakesByBounds(
+                format = "geojson",
+                startTime = "2024-06-01",
+                endTime = "2024-06-30",
+                minMagnitude = 1.5,
+                minLatitude = minLatitude,
+                maxLatitude = maxLatitude,
+                minLongitude = minLongitude,
+                maxLongitude = maxLongitude
             )
             val events = earthquakeResponse.features.map { it.toEarthquakeEvent() }
             dao.insertAll(events)
