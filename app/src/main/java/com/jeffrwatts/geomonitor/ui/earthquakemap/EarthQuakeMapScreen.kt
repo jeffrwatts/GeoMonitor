@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
@@ -85,17 +86,8 @@ fun EarthQuakeMapScreen(
                 .fillMaxWidth(),
                 cameraPositionState = cameraPositionState,
                 earthquakes = earthquakes,
-                onMapBoundsChanged = {},
-                onEarthQuakeClick = {})
-
-            Button(
-                onClick = { viewModel.refreshEarthquakes(true) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                Text("Refresh Earthquake Data")
-            }
+                onMapBoundsChanged = { viewModel.onMapBoundsChanged(it)},
+                onEarthQuakeClick = { Log.d("EarthQuakeMapScreen", it.place)})
         }
     }
 }
@@ -136,6 +128,12 @@ fun EarthquakeMap(
                 visibleRegion?.latLngBounds?.let { bounds->
                     Log.d("EarthQuakeMapScreen", "bounds = $bounds")
                     onMapBoundsChanged(bounds)
+                }
+
+                // Constrain the zoom level
+                val maxZoomLevel = 7f
+                if (it.zoom < maxZoomLevel) {
+                    cameraPositionState.animate(CameraUpdateFactory.zoomTo(maxZoomLevel))
                 }
             }
     }

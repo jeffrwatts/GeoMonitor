@@ -1,5 +1,6 @@
 package com.jeffrwatts.geomonitor.data.earthquakeevent
 
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.jeffrwatts.geomonitor.network.USGSEarthquakeApi
 import com.jeffrwatts.geomonitor.network.toEarthquakeEvent
@@ -8,63 +9,63 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import java.util.concurrent.TimeUnit
 
 class EarthquakeRepository @Inject constructor(
     private val dao: EarthquakeEventDao,
     private val usgsApi: USGSEarthquakeApi
 ) {
-    fun getEarthQuakeEvents(bounds: LatLngBounds) : Flow<List<EarthQuakeEvent>> = flow<List<EarthQuakeEvent>> {
-        fetchEarthquakes(bounds)
+    private var cachedLatLngBounds: LatLngBounds = LatLngBounds(LatLng(0.0, 0.0), LatLng(0.0, 0.0))
+    private var cachedTime: Long = 0
+
+    private fun containsEntirely(outerBounds: LatLngBounds, innerBounds: LatLngBounds): Boolean {
+        return outerBounds.contains(innerBounds.northeast) && outerBounds.contains(innerBounds.southwest)
+    }
+
+    fun getEarthQuakeEvents(bounds: LatLngBounds, startTime: String, endTime: String): Flow<List<EarthQuakeEvent>> = flow {
+        val currentTime = System.currentTimeMillis()
+        val useCached = containsEntirely(cachedLatLngBounds, bounds) &&
+                currentTime - cachedTime <= TimeUnit.HOURS.toMillis(1)
+
+        if (!useCached) {
+            val expandedBounds = expandBounds(bounds, 1.0)
+            val success = fetchEarthquakes(expandedBounds, startTime, endTime)
+            if (success) {
+                cachedLatLngBounds = expandedBounds
+                cachedTime = currentTime
+            }
+        }
+
         emit(dao.getAllEvents())
     }.flowOn(Dispatchers.IO)
 
-    // Get earthquake events with the option to force refresh from the API
-    fun getEarthquakeEvents(forceRefresh: Boolean): Flow<List<EarthQuakeEvent>> = flow {
-        if (forceRefresh) {
-            val success = fetchAndStoreEarthquakes()
-            if (success) {
-                emit(dao.getAllEvents()) // Emit fresh data from the database
-            } else {
-                // Handle error appropriately or emit local data
-                emit(dao.getAllEvents()) // This can be adjusted based on your error handling strategy
-            }
-        } else {
-            emit(dao.getAllEvents()) // Emit existing data from the database
-        }
-    }.flowOn(Dispatchers.IO) // Operations performed on IO dispatcher
+    private fun expandBounds(bounds: LatLngBounds, expandFactor: Double): LatLngBounds {
+        val latSpan = bounds.northeast.latitude - bounds.southwest.latitude
+        val lngSpan = bounds.northeast.longitude - bounds.southwest.longitude
 
-    // Helper method to fetch data from the API and store it in the Room database
-    private suspend fun fetchAndStoreEarthquakes(): Boolean {
-        try {
-            val earthquakeResponse = usgsApi.getEarthquakes(
-                format = "geojson",
-                startTime = "2024-06-01",
-                endTime = "2024-06-30",
-                minMagnitude = 1.5,
-                latitude = 19.5429,
-                longitude = -155.6659,
-                maxRadiusKm = 100
-            )
-            val events = earthquakeResponse.features.map { it.toEarthquakeEvent() }
-            dao.insertAll(events)
-            return true // Return true when data is successfully fetched and stored
-        } catch (e: Exception) {
-            e.printStackTrace() // Log the error
-            return false // Return false in case of an exception
-        }
+        val newSouthwest = LatLng(
+            bounds.southwest.latitude - latSpan * expandFactor,
+            bounds.southwest.longitude - lngSpan * expandFactor
+        )
+        val newNortheast = LatLng(
+            bounds.northeast.latitude + latSpan * expandFactor,
+            bounds.northeast.longitude + lngSpan * expandFactor
+        )
+
+        return LatLngBounds(newSouthwest, newNortheast)
     }
 
-    private suspend fun fetchEarthquakes(bounds: LatLngBounds): Boolean {
+    private suspend fun fetchEarthquakes(bounds: LatLngBounds, startTime: String, endTime: String): Boolean {
         val minLatitude = bounds.southwest.latitude
         val maxLatitude = bounds.northeast.latitude
         val minLongitude = bounds.southwest.longitude
         val maxLongitude = bounds.northeast.longitude
 
-        try {
+        return try {
             val earthquakeResponse = usgsApi.getEarthquakesByBounds(
                 format = "geojson",
-                startTime = "2024-06-01",
-                endTime = "2024-06-30",
+                startTime = startTime,
+                endTime = endTime,
                 minMagnitude = 1.5,
                 minLatitude = minLatitude,
                 maxLatitude = maxLatitude,
@@ -73,10 +74,10 @@ class EarthquakeRepository @Inject constructor(
             )
             val events = earthquakeResponse.features.map { it.toEarthquakeEvent() }
             dao.insertAll(events)
-            return true // Return true when data is successfully fetched and stored
+            true // Return true when data is successfully fetched and stored
         } catch (e: Exception) {
             e.printStackTrace() // Log the error
-            return false // Return false in case of an exception
+            false // Return false in case of an exception
         }
     }
 }
