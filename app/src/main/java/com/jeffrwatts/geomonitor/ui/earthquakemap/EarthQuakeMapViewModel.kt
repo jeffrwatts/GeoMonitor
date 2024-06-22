@@ -23,8 +23,12 @@ class EarthQuakeMapViewModel @Inject constructor(
     private val _earthquakes = MutableStateFlow<List<EarthQuakeEvent>>(emptyList())
     val earthquakes: StateFlow<List<EarthQuakeEvent>> = _earthquakes
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
+
     fun onMapBoundsChanged(bounds: LatLngBounds) {
         viewModelScope.launch {
+            _isLoading.value = true
             val now = Instant.now()
             val yesterday = now.minus(24, ChronoUnit.HOURS)
 
@@ -37,6 +41,7 @@ class EarthQuakeMapViewModel @Inject constructor(
 
             repository.getEarthQuakeEvents(bounds, startTime, endTime).collect { earthquakeList ->
                 _earthquakes.value = earthquakeList
+                _isLoading.value = false
             }
         }
     }

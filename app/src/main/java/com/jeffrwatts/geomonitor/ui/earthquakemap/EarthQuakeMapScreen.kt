@@ -2,12 +2,14 @@ package com.jeffrwatts.geomonitor.ui.earthquakemap
 
 import android.Manifest
 import android.util.Log
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -18,6 +20,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -52,6 +55,7 @@ fun EarthQuakeMapScreen(
 ) {
     val topAppBarState = rememberTopAppBarState()
     val earthquakes = viewModel.earthquakes.collectAsState().value
+    val isLoading = viewModel.isLoading.collectAsState().value
     val (selectedEarthquake, setSelectedEarthquake) = remember { mutableStateOf<EarthQuakeEvent?>(null) }
 
     // Permissions state for location and notifications
@@ -87,14 +91,21 @@ fun EarthQuakeMapScreen(
             .fillMaxSize()
 
         Column(modifier = contentModifier) {
-            EarthquakeMap(modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth(),
-                cameraPositionState = cameraPositionState,
-                earthquakes = earthquakes,
-                onMapBoundsChanged = { viewModel.onMapBoundsChanged(it) },
-                onEarthQuakeClick = { setSelectedEarthquake(it) })
+            Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                EarthquakeMap(
+                    modifier = Modifier.fillMaxSize(),
+                    cameraPositionState = cameraPositionState,
+                    earthquakes = earthquakes,
+                    onMapBoundsChanged = { viewModel.onMapBoundsChanged(it) },
+                    onEarthQuakeClick = { setSelectedEarthquake(it) }
+                )
 
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+            }
         }
 
         // Show the dialog if an earthquake is selected
