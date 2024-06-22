@@ -13,7 +13,7 @@ import com.jeffrwatts.geomonitor.ui.quakeevents.QuakeEventsScreen
 fun GeoMonitorNavGraph(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
-    startDestination: String = GeoMonitorDestinations.QUAKE_EVENTS_ROUTE,
+    startDestination: String = GeoMonitorDestinations.EARTH_QUAKE_MAP_ROUTE,
 ) {
     NavHost(
         navController = navController,

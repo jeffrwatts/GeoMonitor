@@ -26,7 +26,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
-import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -62,7 +61,8 @@ fun EarthQuakeMapScreen(
     val permissionsState = rememberMultiplePermissionsState(
         permissions = listOf(
             Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.ACCESS_FINE_LOCATION
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.POST_NOTIFICATIONS
         )
     )
 
@@ -136,9 +136,12 @@ fun EarthquakeMap(
     ) {
         earthquakes.forEach { earthquake ->
             val resourceId = when {
-                earthquake.magnitude < 2.0 -> R.drawable.earthquake_green
-                earthquake.magnitude < 3.0 -> R.drawable.earthquake_yellow
-                else -> R.drawable.earthquake_red
+                earthquake.magnitude < 4.0 -> R.drawable.earthquake_minor
+                earthquake.magnitude < 5.0 -> R.drawable.earthquake_moderate
+                earthquake.magnitude < 6.0 -> R.drawable.earthquake_strong
+                earthquake.magnitude < 7.0 -> R.drawable.earthquake_major
+                earthquake.magnitude < 8.0 -> R.drawable.earthquake_great
+                else -> R.drawable.earthquake_massive
             }
             val bitmapDescriptor = BitmapDescriptorFactory.fromResource(resourceId)
 
@@ -160,12 +163,6 @@ fun EarthquakeMap(
                 visibleRegion?.latLngBounds?.let { bounds ->
                     Log.d("EarthQuakeMapScreen", "bounds = $bounds")
                     onMapBoundsChanged(bounds)
-                }
-
-                // Constrain the zoom level
-                val maxZoomLevel = 7f
-                if (it.zoom < maxZoomLevel) {
-                    cameraPositionState.animate(CameraUpdateFactory.zoomTo(maxZoomLevel))
                 }
             }
     }
