@@ -2,4 +2,5 @@
     <string name="app_name">Geo Monitor</string>
     <string name="quake_events">Quake Events</string>
     <string name="quake_map">Quake Map</string>
+    <string name="permission_rationale">Please provide map and push permissions</string>
 </resources>

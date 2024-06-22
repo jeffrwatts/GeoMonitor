@@ -40,6 +40,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.jeffrwatts.geomonitor.R
 import com.jeffrwatts.geomonitor.data.earthquakeevent.EarthQuakeEvent
 import com.jeffrwatts.geomonitor.ui.GeoMonitorTopAppBar
+import com.jeffrwatts.geomonitor.ui.PermissionWrapper
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import java.text.SimpleDateFormat
@@ -90,27 +91,36 @@ fun EarthQuakeMapScreen(
             .padding(innerPadding)
             .fillMaxSize()
 
-        Column(modifier = contentModifier) {
-            Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
-                EarthquakeMap(
-                    modifier = Modifier.fillMaxSize(),
-                    cameraPositionState = cameraPositionState,
-                    earthquakes = earthquakes,
-                    onMapBoundsChanged = { viewModel.onMapBoundsChanged(it) },
-                    onEarthQuakeClick = { setSelectedEarthquake(it) }
-                )
-
-                if (isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.align(Alignment.Center)
+        PermissionWrapper(
+            permissions = listOf(
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.POST_NOTIFICATIONS
+            ),
+            rationaleMessage = stringResource(id = R.string.permission_rationale)
+        ) {
+            Column(modifier = contentModifier) {
+                Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                    EarthquakeMap(
+                        modifier = Modifier.fillMaxSize(),
+                        cameraPositionState = cameraPositionState,
+                        earthquakes = earthquakes,
+                        onMapBoundsChanged = { viewModel.onMapBoundsChanged(it) },
+                        onEarthQuakeClick = { setSelectedEarthquake(it) }
                     )
+
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    }
                 }
             }
-        }
 
-        // Show the dialog if an earthquake is selected
-        selectedEarthquake?.let {
-            EarthquakeInfoDialog(earthquake = it, onDismiss = { setSelectedEarthquake(null) })
+            // Show the dialog if an earthquake is selected
+            selectedEarthquake?.let {
+                EarthquakeInfoDialog(earthquake = it, onDismiss = { setSelectedEarthquake(null) })
+            }
         }
     }
 }

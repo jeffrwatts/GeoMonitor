@@ -24,6 +24,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.jeffrwatts.geomonitor.R
 import com.jeffrwatts.geomonitor.ui.GeoMonitorTopAppBar
+import com.jeffrwatts.geomonitor.ui.PermissionWrapper
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
@@ -56,31 +57,41 @@ fun QuakeEventsScreen(
         },
         modifier = modifier
     ) { innerPadding ->
-        Column(modifier = Modifier
-            .padding(innerPadding)
-            .fillMaxSize()) {
-            // Button row
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Button(
-                    onClick = { viewModel.subscribeToTopic("earthquake-alerts") },
-                    modifier = Modifier.fillMaxWidth()
+        PermissionWrapper(
+            permissions = listOf(
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.POST_NOTIFICATIONS
+            ),
+            rationaleMessage = stringResource(id = R.string.permission_rationale)
+        ) {
+            Column(modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize()) {
+                // Button row
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Subscribe to Earthquake Alerts")
+                    Button(
+                        onClick = { viewModel.subscribeToTopic("earthquake-alerts") },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Subscribe to Earthquake Alerts")
+                    }
                 }
+                // Additional content can go here
+                Spacer(modifier = Modifier.height(8.dp))  // Adds some space below the button
+                Text(
+                    text = "More information will appear here.",
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .align(Alignment.CenterHorizontally)
+                )
             }
-            // Additional content can go here
-            Spacer(modifier = Modifier.height(8.dp))  // Adds some space below the button
-            Text(
-                text = "More information will appear here.",
-                modifier = Modifier
-                    .padding(16.dp)
-                    .align(Alignment.CenterHorizontally)
-            )
+
         }
     }
 }
