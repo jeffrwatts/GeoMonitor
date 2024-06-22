@@ -39,6 +39,7 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.jeffrwatts.geomonitor.R
 import com.jeffrwatts.geomonitor.data.earthquakeevent.EarthQuakeEvent
+import com.jeffrwatts.geomonitor.data.volcano.MonitoredVolcano
 import com.jeffrwatts.geomonitor.ui.GeoMonitorTopAppBar
 import com.jeffrwatts.geomonitor.ui.PermissionWrapper
 import kotlinx.coroutines.FlowPreview
@@ -55,6 +56,7 @@ fun EarthQuakeMapScreen(
 ) {
     val topAppBarState = rememberTopAppBarState()
     val earthquakes = viewModel.earthquakes.collectAsState().value
+    val volcanos = viewModel.volcanoes.collectAsState().value
     val isLoading = viewModel.isLoading.collectAsState().value
     val (selectedEarthquake, setSelectedEarthquake) = remember { mutableStateOf<EarthQuakeEvent?>(null) }
 
@@ -100,11 +102,14 @@ fun EarthQuakeMapScreen(
             rationaleMessage = stringResource(id = R.string.permission_rationale)
         ) {
             Column(modifier = contentModifier) {
-                Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                Box(modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()) {
                     EarthquakeMap(
                         modifier = Modifier.fillMaxSize(),
                         cameraPositionState = cameraPositionState,
                         earthquakes = earthquakes,
+                        volcanos= volcanos,
                         onMapBoundsChanged = { viewModel.onMapBoundsChanged(it) },
                         onEarthQuakeClick = { setSelectedEarthquake(it) }
                     )
@@ -132,6 +137,7 @@ fun EarthquakeMap(
     modifier: Modifier,
     cameraPositionState: CameraPositionState,
     earthquakes: List<EarthQuakeEvent>,
+    volcanos: List<MonitoredVolcano>,
     onMapBoundsChanged: (LatLngBounds) -> Unit,
     onEarthQuakeClick: (EarthQuakeEvent) -> Unit
 ) {
@@ -163,6 +169,16 @@ fun EarthquakeMap(
                 onClick = { onEarthQuakeClick(earthquake); true }
             )
         }
+
+        val volcanoBitmapDescriptor = BitmapDescriptorFactory.fromResource(R.drawable.volcano_inactive)
+        volcanos.forEach { volcano->
+            Marker(
+                state = MarkerState(position = LatLng(volcano.latitude, volcano.longitude)),
+                icon = volcanoBitmapDescriptor,
+                title = volcano.volcanoName
+            )
+        }
+
     }
 
     LaunchedEffect(cameraPositionState) {

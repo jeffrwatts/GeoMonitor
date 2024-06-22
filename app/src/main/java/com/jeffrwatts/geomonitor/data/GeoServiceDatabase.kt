@@ -6,11 +6,16 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.jeffrwatts.geomonitor.data.earthquakeevent.EarthQuakeEvent
 import com.jeffrwatts.geomonitor.data.earthquakeevent.EarthquakeEventDao
+import com.jeffrwatts.geomonitor.data.volcano.MonitoredVolcano
+import com.jeffrwatts.geomonitor.data.volcano.MonitoredVolcanoDao
 
 @Database(entities = [
-    EarthQuakeEvent::class], version = 1, exportSchema = false)
+    EarthQuakeEvent::class,
+    MonitoredVolcano::class], version = 1, exportSchema = false)
 abstract class GeoServiceDatabase : RoomDatabase() {
     abstract fun earthQuakeEventDao(): EarthquakeEventDao
+    abstract fun monitoredVolcanoDao(): MonitoredVolcanoDao
+
 
     companion object {
         @Volatile

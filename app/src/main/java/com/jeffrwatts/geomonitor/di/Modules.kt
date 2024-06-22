@@ -5,7 +5,9 @@ import com.google.firebase.messaging.FirebaseMessaging
 import com.jeffrwatts.geomonitor.GeoServiceDatabase
 import com.jeffrwatts.geomonitor.data.earthquakeevent.EarthquakeEventDao
 import com.jeffrwatts.geomonitor.data.earthquakeevent.EarthquakeRepository
+import com.jeffrwatts.geomonitor.data.volcano.MonitoredVolcanoDao
 import com.jeffrwatts.geomonitor.network.USGSEarthquakeApi
+import com.jeffrwatts.geomonitor.network.USGSVolcanoApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -50,6 +52,28 @@ object NetworkModule {
 
         return retrofit.create(USGSEarthquakeApi::class.java)
     }
+
+    @Provides
+    @Singleton
+    fun provideUSGSVolcanoApi(): USGSVolcanoApi {
+        val logging = HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BODY
+        }
+
+        val okHttpClient = OkHttpClient.Builder()
+            .readTimeout(60, TimeUnit.SECONDS)
+            .connectTimeout(60, TimeUnit.SECONDS)
+            .addInterceptor(logging)
+            .build()
+
+        val retrofit = Retrofit.Builder()
+            .baseUrl("https://volcanoes.usgs.gov/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(okHttpClient)
+            .build()
+
+        return retrofit.create(USGSVolcanoApi::class.java)
+    }
 }
 
 @Module
@@ -59,6 +83,12 @@ object DatabaseModule {
     @Provides
     fun provideEarthQuakeEventDao(@ApplicationContext context: Context): EarthquakeEventDao {
         return GeoServiceDatabase.getDatabase(context).earthQuakeEventDao()
+    }
+
+    @Singleton
+    @Provides
+    fun provideMonitoredVolcanoDao(@ApplicationContext context: Context): MonitoredVolcanoDao {
+        return GeoServiceDatabase.getDatabase(context).monitoredVolcanoDao()
     }
 }
 

@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLngBounds
 import com.jeffrwatts.geomonitor.data.earthquakeevent.EarthQuakeEvent
 import com.jeffrwatts.geomonitor.data.earthquakeevent.EarthquakeRepository
+import com.jeffrwatts.geomonitor.data.volcano.MonitoredVolcano
+import com.jeffrwatts.geomonitor.data.volcano.MonitoredVolcanoRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,14 +19,32 @@ import javax.inject.Inject
 
 @HiltViewModel
 class EarthQuakeMapViewModel @Inject constructor(
-    private val repository: EarthquakeRepository
+    private val repository: EarthquakeRepository,
+    private val volcanoRepository: MonitoredVolcanoRepository
 ) : ViewModel() {
 
     private val _earthquakes = MutableStateFlow<List<EarthQuakeEvent>>(emptyList())
     val earthquakes: StateFlow<List<EarthQuakeEvent>> = _earthquakes
 
+    private val _volcanoes = MutableStateFlow<List<MonitoredVolcano>>(emptyList())
+    val volcanoes: StateFlow<List<MonitoredVolcano>> = _volcanoes
+
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
+
+    init {
+        loadMonitoredVolcanoes()
+    }
+
+    private fun loadMonitoredVolcanoes() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            volcanoRepository.getAllMonitoredVolcanoes().collect { volcanoList ->
+                _volcanoes.value = volcanoList
+                _isLoading.value = false
+            }
+        }
+    }
 
     fun onMapBoundsChanged(bounds: LatLngBounds) {
         viewModelScope.launch {
