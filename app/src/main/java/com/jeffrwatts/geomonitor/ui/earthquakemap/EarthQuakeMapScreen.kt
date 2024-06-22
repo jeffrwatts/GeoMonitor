@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
@@ -14,15 +15,16 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
@@ -38,6 +40,9 @@ import com.jeffrwatts.geomonitor.data.earthquakeevent.EarthQuakeEvent
 import com.jeffrwatts.geomonitor.ui.GeoMonitorTopAppBar
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
@@ -47,6 +52,7 @@ fun EarthQuakeMapScreen(
 ) {
     val topAppBarState = rememberTopAppBarState()
     val earthquakes = viewModel.earthquakes.collectAsState().value
+    val (selectedEarthquake, setSelectedEarthquake) = remember { mutableStateOf<EarthQuakeEvent?>(null) }
 
     // Permissions state for location and notifications
     val permissionsState = rememberMultiplePermissionsState(
@@ -86,11 +92,18 @@ fun EarthQuakeMapScreen(
                 .fillMaxWidth(),
                 cameraPositionState = cameraPositionState,
                 earthquakes = earthquakes,
-                onMapBoundsChanged = { viewModel.onMapBoundsChanged(it)},
-                onEarthQuakeClick = { Log.d("EarthQuakeMapScreen", it.place)})
+                onMapBoundsChanged = { viewModel.onMapBoundsChanged(it) },
+                onEarthQuakeClick = { setSelectedEarthquake(it) })
+
+        }
+
+        // Show the dialog if an earthquake is selected
+        selectedEarthquake?.let {
+            EarthquakeInfoDialog(earthquake = it, onDismiss = { setSelectedEarthquake(null) })
         }
     }
 }
+
 
 @OptIn(FlowPreview::class)
 @Composable
@@ -111,8 +124,16 @@ fun EarthquakeMap(
         cameraPositionState = cameraPositionState
     ) {
         earthquakes.forEach { earthquake ->
+            val resourceId = when {
+                earthquake.magnitude < 2.0 -> R.drawable.earthquake_green
+                earthquake.magnitude < 3.0 -> R.drawable.earthquake_yellow
+                else -> R.drawable.earthquake_red
+            }
+            val bitmapDescriptor = BitmapDescriptorFactory.fromResource(resourceId)
+
             Marker(
                 state = MarkerState(position = LatLng(earthquake.latitude, earthquake.longitude)),
+                icon = bitmapDescriptor,
                 title = earthquake.place,
                 snippet = "Magnitude: ${earthquake.magnitude}",
                 onClick = { onEarthQuakeClick(earthquake); true }
@@ -125,7 +146,7 @@ fun EarthquakeMap(
             .debounce(1000)
             .collect {
                 val visibleRegion = cameraPositionState.projection?.visibleRegion
-                visibleRegion?.latLngBounds?.let { bounds->
+                visibleRegion?.latLngBounds?.let { bounds ->
                     Log.d("EarthQuakeMapScreen", "bounds = $bounds")
                     onMapBoundsChanged(bounds)
                 }
@@ -137,4 +158,31 @@ fun EarthquakeMap(
                 }
             }
     }
+}
+
+@Composable
+fun EarthquakeInfoDialog(
+    earthquake: EarthQuakeEvent,
+    onDismiss: () -> Unit
+) {
+    val dateFormat = remember { SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()) }
+    val formattedTime = remember { dateFormat.format(Date(earthquake.time)) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(text = earthquake.place) },
+        text = {
+            Column {
+                Text(text = "Magnitude: ${earthquake.magnitude}")
+                Text(text = "Depth: ${earthquake.depth} km")
+                Text(text = "Time: $formattedTime")
+                // Add more details as needed
+            }
+        },
+        confirmButton = {
+            Button(onClick = onDismiss) {
+                Text("OK")
+            }
+        }
+    )
 }
