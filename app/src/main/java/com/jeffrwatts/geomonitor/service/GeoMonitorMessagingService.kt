@@ -41,7 +41,7 @@ class GeoMonitorMessagingService : FirebaseMessagingService() {
         val notification = NotificationCompat.Builder(this, channelId)
             .setContentTitle(title)
             .setContentText(body)
-            .setSmallIcon(R.drawable.ic_launcher_foreground) // Replace with your app's notification icon
+            .setSmallIcon(R.drawable.earth)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
             .build()
