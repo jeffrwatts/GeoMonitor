@@ -9,4 +9,7 @@ interface USGSVolcanoApi {
 
     @GET("hans-public/api/volcano/getVolcano/{volcanoID}")
     suspend fun getVolcanoDetails(@Path("volcanoID") volcanoID: String): USGSVolcanoDetails
+
+    @GET("hans-public/api/volcano/getElevatedVolcanoes")
+    suspend fun getElevatedVolcanoes(): List<USGSVolcanoesElevated>
 }

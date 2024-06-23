@@ -10,6 +10,12 @@ interface MonitoredVolcanoDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(volcanoes: List<MonitoredVolcano>)
 
+    @Query("UPDATE monitored_volcanos SET alertLevel = :alertLevel, colorCode = :colorCode, updateUtc = :updateUtc")
+    suspend fun updateAllVolcanoStatus(alertLevel: AlertLevel, colorCode: ColorCode, updateUtc: Long)
+
+    @Query("UPDATE monitored_volcanos SET alertLevel = :alertLevel, colorCode = :colorCode, updateUtc = :updateUtc WHERE volcanoID = :volcanoID")
+    suspend fun updateVolcanoStatus(volcanoID: String, alertLevel: AlertLevel, colorCode: ColorCode, updateUtc: Long)
+
     @Query("SELECT * FROM monitored_volcanos")
     suspend fun getAllVolcanoes(): List<MonitoredVolcano>
 

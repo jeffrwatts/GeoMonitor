@@ -150,6 +150,15 @@ fun EarthquakeMap(
         properties = mapProperties,
         cameraPositionState = cameraPositionState
     ) {
+        val volcanoBitmapDescriptor = BitmapDescriptorFactory.fromResource(R.drawable.volcano_inactive)
+        volcanos.forEach { volcano->
+            Marker(
+                state = MarkerState(position = LatLng(volcano.latitude, volcano.longitude)),
+                icon = volcanoBitmapDescriptor,
+                title = volcano.volcanoName
+            )
+        }
+
         earthquakes.forEach { earthquake ->
             val resourceId = when {
                 earthquake.magnitude < 4.0 -> R.drawable.earthquake_minor
@@ -169,16 +178,6 @@ fun EarthquakeMap(
                 onClick = { onEarthQuakeClick(earthquake); true }
             )
         }
-
-        val volcanoBitmapDescriptor = BitmapDescriptorFactory.fromResource(R.drawable.volcano_inactive)
-        volcanos.forEach { volcano->
-            Marker(
-                state = MarkerState(position = LatLng(volcano.latitude, volcano.longitude)),
-                icon = volcanoBitmapDescriptor,
-                title = volcano.volcanoName
-            )
-        }
-
     }
 
     LaunchedEffect(cameraPositionState) {
@@ -220,3 +219,5 @@ fun EarthquakeInfoDialog(
         }
     )
 }
+
+

@@ -40,7 +40,7 @@ class EarthQuakeMapViewModel @Inject constructor(
         viewModelScope.launch {
             _isLoading.value = true
             volcanoRepository.getAllMonitoredVolcanoes().collect { volcanoList ->
-                _volcanoes.value = volcanoList
+                _volcanoes.value = sortVolcanoes(volcanoList)
                 _isLoading.value = false
             }
         }
@@ -60,9 +60,18 @@ class EarthQuakeMapViewModel @Inject constructor(
             val endTime = formatter.format(now)
 
             repository.getEarthQuakeEvents(bounds, startTime, endTime).collect { earthquakeList ->
-                _earthquakes.value = earthquakeList
+                _earthquakes.value = sortEarthquakes(earthquakeList)
                 _isLoading.value = false
             }
         }
+    }
+
+    // Sorting functions
+    private fun sortVolcanoes(volcanoes: List<MonitoredVolcano>): List<MonitoredVolcano> {
+        return volcanoes.sortedBy { it.alertLevel.order }
+    }
+
+    private fun sortEarthquakes(earthquakes: List<EarthQuakeEvent>): List<EarthQuakeEvent> {
+        return earthquakes.sortedBy { it.magnitude }
     }
 }
