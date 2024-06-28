@@ -39,6 +39,7 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.jeffrwatts.geomonitor.R
 import com.jeffrwatts.geomonitor.data.earthquakeevent.EarthQuakeEvent
+import com.jeffrwatts.geomonitor.data.volcano.AlertLevel
 import com.jeffrwatts.geomonitor.data.volcano.MonitoredVolcano
 import com.jeffrwatts.geomonitor.ui.GeoMonitorTopAppBar
 import com.jeffrwatts.geomonitor.ui.PermissionWrapper
@@ -150,11 +151,20 @@ fun EarthquakeMap(
         properties = mapProperties,
         cameraPositionState = cameraPositionState
     ) {
-        val volcanoBitmapDescriptor = BitmapDescriptorFactory.fromResource(R.drawable.volcano_inactive)
+
         volcanos.forEach { volcano->
+            val resourceId = when {
+                volcano.alertLevel == AlertLevel.NORMAL -> R.drawable.volcano_normal
+                volcano.alertLevel == AlertLevel.ADVISORY -> R.drawable.volcano_advisory
+                volcano.alertLevel == AlertLevel.WATCH -> R.drawable.volcano_watch
+                volcano.alertLevel == AlertLevel.WARNING -> R.drawable.volcano_warning
+                else -> R.drawable.volcano_warning
+            }
+            val bitmapDescriptor = BitmapDescriptorFactory.fromResource(resourceId)
+
             Marker(
                 state = MarkerState(position = LatLng(volcano.latitude, volcano.longitude)),
-                icon = volcanoBitmapDescriptor,
+                icon = bitmapDescriptor,
                 title = volcano.volcanoName
             )
         }
