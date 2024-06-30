@@ -29,6 +29,7 @@ class MonitoredVolcanoRepository @Inject constructor(
         if (!useCache) {
             updateVolcanoStatus()
             cachedTime = System.currentTimeMillis()
+            volcanoes = dao.getAllVolcanoes()
         }
 
         emit(volcanoes)
